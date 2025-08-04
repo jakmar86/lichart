@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lichfield Niche Opportunity Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
+    <!-- Chosen Palette: Calm Neutral Harmony -->
+    <!-- Application Structure Plan: A dashboard-style SPA featuring a central interactive bubble chart based on the report's Opportunity Assessment Matrix. Users can click on bubbles (representing niches) to dynamically filter and display detailed information below. This structure was chosen to transform the dense report data into a visual, comparative, and engaging exploration tool, allowing users to quickly identify high-potential niches based on multiple criteria (engagement, monetization, demand) rather than reading linearly. The main navigation allows users to jump to thematic sections for a more traditional overview. -->
+    <!-- Visualization & Content Choices: The core visualization is an interactive bubble chart (Chart.js) mapping Community Engagement vs. Monetization Potential, with bubble size representing Market Demand. This directly visualizes the report's comparative analysis (Table 2). Clicking a bubble triggers a JS function to display detailed cards for the selected niche, populated with data from Table 1 (Illustrative Examples). This interaction serves the goal of comparing and then exploring details. Textual content from the report's introduction and summary is used to provide context. Structured HTML/CSS is used for layout and icons (Unicode characters) to maintain the NO SVG/Mermaid constraint. The entire design supports the goal of making complex report data easily digestible and actionable. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; height: 400px; max-height: 60vh; }
+        @media (min-width: 768px) { .chart-container { height: 500px; } }
+        .nav-link { transition: all 0.3s ease; }
+        .nav-link.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+        .niche-card { transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; }
+        .hidden-card { opacity: 0; transform: scale(0.95); position: absolute; z-index: -10; }
+        .visible-card { opacity: 1; transform: scale(1); position: static; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-indigo-600">Lichfield Niche Explorer</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#explorer" class="nav-link text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Explorer</a>
+                        <a href="#opportunities" class="nav-link text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Opportunities</a>
+                        <a href="#about" class="nav-link text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">About</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <section id="hero" class="text-center mb-12 md:mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-4">Unlocking Local Opportunities in Lichfield</h1>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                This interactive tool visualizes the findings from the "Underserved Niches for Online Directories" report. Explore potential market gaps, compare opportunities, and discover where the next great local business idea in Lichfield might be hiding.
+            </p>
+        </section>
+
+        <section id="explorer" class="bg-white p-6 md:p-8 rounded-2xl shadow-lg mb-12 md:mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-2 text-center">Opportunity Assessment Matrix</h2>
+            <p class="text-center text-slate-500 mb-6 max-w-2xl mx-auto">Click on a bubble to explore a niche. The chart plots Community Engagement against Monetization Potential, with bubble size representing Market Demand.</p>
+            <div class="chart-container">
+                <canvas id="opportunityChart"></canvas>
+            </div>
+             <div class="flex justify-center mt-4">
+                <button id="reset-filter" class="bg-indigo-600 text-white hover:bg-indigo-700 font-medium py-2 px-5 rounded-lg transition-colors duration-300">Show All Opportunities</button>
+            </div>
+        </section>
+
+        <section id="opportunities">
+            <h2 id="opportunities-title" class="text-2xl md:text-3xl font-bold text-slate-900 mb-8 text-center">All Niche Opportunities</h2>
+            <div id="niche-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+        </section>
+
+        <section id="about" class="mt-16 pt-12 border-t border-slate-200">
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-6 text-center">About This Report</h2>
+            <div class="max-w-4xl mx-auto space-y-6 text-slate-600 leading-relaxed">
+                <p>The digital landscape has fundamentally reshaped how individuals seek local services, with an increasing reliance on "near me" and "in my location" searches. This pervasive search behavior underscores a clear user intent for immediate, geographically relevant discovery. However, a comprehensive analysis reveals that while general online directories exist, they frequently fall short in capturing the granular specificity required for niche services. This deficiency creates significant gaps for targeted online platforms that can precisely match specialized demand with often fragmented supply.</p>
+                <p>This interactive application is designed to bridge that gap. By visualizing the potential of various underserved niches in Lichfield, it aims to provide entrepreneurs, community leaders, and investors with a clear, data-driven tool to identify and act upon local opportunities. The goal is to foster a more connected, efficient, and vibrant local ecosystem by making hidden gems discoverable and supporting the growth of specialized local businesses and services.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white mt-16">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-slate-500">
+            <p>&copy; 2025 Lichfield Niche Opportunity Explorer. An interactive visualization.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const nicheData = [
+                { category: 'Community & Support', name: 'Mental Health & Well-being Support', engagement: 5, monetization: 3.5, demand: 5, priority: 'High', examples: ['Perinatal mental health support group (PANDAS Foundation)', 'Autism support groups (SAAS, BLAST)', 'Sight loss support (RNIB Inspire)', 'Specialized therapists (EMDR, Walking Therapy)'], underserved: 'Highly specific needs, fragmented information across national/local sites, difficult to find precise support or therapy modalities.' },
+                { category: 'Community & Support', name: 'Community Groups & Forums', engagement: 5, monetization: 1.5, demand: 3, priority: 'High', examples: ['Lichfield & District Allotments Society', 'Beacon Park Community Garden', 'Environmental groups (Transition Lichfield, Eco Church)', 'Lichfield Freecycle', 'Spark Burntwood'], underserved: 'Diverse, often volunteer-led groups, information scattered across council sites, local news, social media; lack of central discoverability.' },
+                { category: 'Community & Support', name: 'Rare Condition Support', engagement: 3, monetization: 1, demand: 5, priority: 'Medium', examples: ["Specific patient groups (Ring 20 Research, EOS Network, Cure DHDDS)", "National organizations (Rare Disease UK, Beacon) that empower groups but don't list local branches"], underserved: 'Extreme specificity of conditions, local groups are small and hard to find; national resources don\'t provide local direct links.' },
+                { category: 'Artisanal & Bespoke', name: 'Local Artisanal Food & Drink Producers', engagement: 3, monetization: 5, demand: 5, priority: 'High', examples: ['Woodhouse Farm and Garden CIC (rare breed meats, produce, jams)', 'The Cheese Gin and Ale Barn (handcrafted British products)', 'Westwoods Bespoke Dining', 'Dubberley Delicious (seasonal, local produce dining)'], underserved: 'Small-scale operations, often direct-to-consumer or market-based; not easily found via general food/restaurant searches.' },
+                { category: 'Artisanal & Bespoke', name: 'Custom Furniture & Handcrafted Gifts', engagement: 3, monetization: 5, demand: 3, priority: 'High', examples: ['Kingsley Woodwork (bespoke hardwood furniture)', 'Bespoke Lichfield (independent gift shop with local designer makers)'], underserved: 'Demand for unique, personalized items not met by mass-produced goods; artisans lack broad marketing reach.' },
+                { category: 'Sustainable & Repair', name: 'Zero-Waste & Eco-Friendly Initiatives', engagement: 5, monetization: 1.5, demand: 5, priority: 'High', examples: ['Roots Larder CIC (packaging-free dry goods, refills)', 'Fortress Recycling (eco-friendly waste solutions)', 'Transition Lichfield (Zero Carbon Lichfield)', 'Eco Church'], underserved: 'Growing consumer demand for sustainable options; specific eco-friendly businesses/groups are not easily aggregated.' },
+                { category: 'Sustainable & Repair', name: 'Repair Cafes & Specialist Repair', engagement: 5, monetization: 3.5, demand: 5, priority: 'High', examples: ['Lichfield Repair and Share Cafe', 'Unique Repair Services (appliances)', 'S.F. Smith Mechanical Repairs (cars, classic cars)', 'Timothy Warr (antique furniture)', 'Electric City Repair (vintage audio)', 'Hill City Music (instruments)'], underserved: '"Repair economy" trend; highly specialized repair needs (vintage, antique, bespoke) are hard to match with providers; community options are not widely discoverable.' },
+                { category: 'Education & Hobbies', name: 'Specialized Art & Craft Workshops', engagement: 5, monetization: 5, demand: 3, priority: 'Medium', examples: ['The Art Skills Class Lichfield (painting, drawing)', 'The Pottery Cave Clay Studio (pottery, paint-a-pot)', 'Lack of local candle making courses (online only)'], underserved: 'Demand for hands-on, in-person learning; specific craft interests are not always locally available or easily found.' },
+                { category: 'Education & Hobbies', name: 'Unique Language Courses', engagement: 3, monetization: 3, demand: 2, priority: 'Low', examples: ['Language for Fun (conversational French, Italian, Spanish for adults)'], underserved: 'Specific learning preferences (conversational, social, no exams) are underserved by traditional language schools or apps.' },
+                { category: 'Education & Hobbies', name: 'Adaptive Fitness & Niche Martial Arts', engagement: 3, monetization: 5, demand: 3, priority: 'Medium', examples: ['Special Strong (adaptive fitness for special needs - non-local but illustrative)', 'Litchfield Tang Soo Do', 'Lichfield Wado Ryu Karate Club', 'Bojangles Dance (specific genres like Pointework, Irish)'], underserved: 'Highly specialized physical activities and fitness needs are not typically listed in general directories.' },
+                { category: 'Local Experiences', name: 'Specialized Walking Tours', engagement: 3, monetization: 3, demand: 3, priority: 'Medium', examples: ['Lichfield History Tour', 'Gruesome and Ghostly Guided Tour', "Atlas Obscura's unusual sites (Erasmus Darwin House, Damaged Cathedral Faces)", 'Lichfield Lore (ghost stories)'], underserved: 'Demand for unique narratives, local folklore, and off-the-beaten-path historical sites not covered by mainstream tourism.' },
+                { category: 'Local Experiences', name: 'Independent Arts & Culture Venues', engagement: 3, monetization: 2, demand: 3, priority: 'Medium', examples: ['Wedge Art Gallery', 'Clarendon Fine Art', 'Red Carpet cinema', 'The Feathers Inn (live music)', '55 Wade Street (live music/DJs)'], underserved: 'Smaller, independent venues and niche artistic experiences are often overlooked or difficult to discover compared to major institutions.' }
+            ];
+
+            const priorityColors = {
+                High: 'rgba(79, 70, 229, 0.7)',   // Indigo
+                Medium: 'rgba(2, 132, 199, 0.7)', // Sky
+                Low: 'rgba(107, 114, 128, 0.7)'  // Gray
+            };
+            
+            const priorityBorderColors = {
+                High: 'rgba(79, 70, 229, 1)',
+                Medium: 'rgba(2, 132, 199, 1)',
+                Low: 'rgba(107, 114, 128, 1)'
+            };
+
+            const chartData = {
+                datasets: nicheData.map(niche => ({
+                    label: niche.name,
+                    data: [{
+                        x: niche.engagement,
+                        y: niche.monetization,
+                        r: niche.demand * 3 + 2 
+                    }],
+                    backgroundColor: priorityColors[niche.priority],
+                    borderColor: priorityBorderColors[niche.priority],
+                    borderWidth: 2,
+                    hoverBackgroundColor: priorityColors[niche.priority].replace('0.7', '1'),
+                }))
+            };
+
+            const ctx = document.getElementById('opportunityChart').getContext('2d');
+            const opportunityChart = new Chart(ctx, {
+                type: 'bubble',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const niche = nicheData[context.datasetIndex];
+                                    return `${niche.name} | Priority: ${niche.priority}`;
+                                }
+                            },
+                            backgroundColor: '#1f2937',
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 4,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Community Engagement Potential',
+                                font: { size: 14, weight: '500' },
+                                color: '#475569'
+                            },
+                            min: 0,
+                            max: 6,
+                            grid: { color: '#e2e8f0' }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Monetization Potential',
+                                font: { size: 14, weight: '500' },
+                                color: '#475569'
+                            },
+                            min: 0,
+                            max: 6,
+                            grid: { color: '#e2e8f0' }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const datasetIndex = elements[0].datasetIndex;
+                            const selectedNiche = nicheData[datasetIndex];
+                            filterNiches(selectedNiche.name);
+                        }
+                    }
+                }
+            });
+
+            const nicheGrid = document.getElementById('niche-grid');
+            const opportunitiesTitle = document.getElementById('opportunities-title');
+            const resetButton = document.getElementById('reset-filter');
+
+            const createNicheCard = (niche) => {
+                const card = document.createElement('div');
+                card.className = 'niche-card bg-white p-6 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col';
+                card.setAttribute('data-niche-name', niche.name);
+
+                let icon = '';
+                switch(niche.category) {
+                    case 'Community & Support': icon = '🤝'; break;
+                    case 'Artisanal & Bespoke': icon = '🎨'; break;
+                    case 'Sustainable & Repair': icon = '♻️'; break;
+                    case 'Education & Hobbies': icon = '🎓'; break;
+                    case 'Local Experiences': icon = '🗺️'; break;
+                }
+                
+                let examplesHtml = niche.examples.map(ex => `<li class="flex items-start"><span class="text-indigo-500 mr-2 mt-1">▪</span><span>${ex}</span></li>`).join('');
+
+                card.innerHTML = `
+                    <div class="flex-grow">
+                        <div class="flex items-center mb-4">
+                            <span class="text-2xl mr-3">${icon}</span>
+                            <h3 class="text-xl font-bold text-slate-800">${niche.name}</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4 text-sm">${niche.underserved}</p>
+                        <h4 class="font-semibold text-slate-700 mb-2">Illustrative Examples:</h4>
+                        <ul class="space-y-1 text-slate-600 text-sm list-none pl-0">
+                            ${examplesHtml}
+                        </ul>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-200">
+                        <span class="inline-block bg-${priorityColors[niche.priority].includes('indigo') ? 'indigo' : priorityColors[niche.priority].includes('sky') ? 'sky' : 'gray'}-100 text-${priorityColors[niche.priority].includes('indigo') ? 'indigo' : priorityColors[niche.priority].includes('sky') ? 'sky' : 'gray'}-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Priority: ${niche.priority}</span>
+                    </div>
+                `;
+                return card;
+            };
+
+            const renderNiches = (nichesToRender) => {
+                nicheGrid.innerHTML = '';
+                nichesToRender.forEach(niche => {
+                    const card = createNicheCard(niche);
+                    nicheGrid.appendChild(card);
+                });
+            };
+
+            const filterNiches = (nicheName) => {
+                const filteredData = nicheData.filter(n => n.name === nicheName);
+                renderNiches(filteredData);
+                opportunitiesTitle.textContent = `Opportunity Details: ${nicheName}`;
+                document.getElementById('opportunities').scrollIntoView({ behavior: 'smooth' });
+            };
+
+            resetButton.addEventListener('click', () => {
+                renderNiches(nicheData);
+                opportunitiesTitle.textContent = 'All Niche Opportunities';
+            });
+            
+            renderNiches(nicheData);
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section, header');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.4
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                if(section.id) {
+                   observer.observe(section);
+                }
+            });
+
+            navLinks.forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
