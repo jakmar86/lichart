@@ -11,28 +11,49 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .bg-gradient-blue {
-            background: linear-gradient(to bottom, #f1f5f9, #cbd5e1);
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F4F0; /* Soft, natural off-white */
+        }
+        .bg-gradient-custom {
+             background: linear-gradient(135deg, #F8F4F0 0%, #D4C9BF 100%); /* Warm, earthy gradient */
+        }
+        .text-primary-dark {
+            color: #2F2D2B; /* Dark brown/charcoal for text */
+        }
+        .text-accent {
+            color: #6C5C4E; /* A subtle accent brown */
+        }
+        .btn-primary {
+            background-color: #6C5C4E;
+            color: #F8F4F0;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #4A403A;
+        }
+        .input-field {
+            background-color: #F8F4F0;
+            border-color: #D4C9BF;
         }
     </style>
 </head>
 <body class="bg-gray-100 text-slate-800">
 
-    <main class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-24 flex items-center justify-center min-h-screen bg-gradient-blue">
+    <main class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-24 flex items-center justify-center min-h-screen bg-gradient-custom">
         <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-4xl md:text-6xl font-bold tracking-tight text-slate-900 mb-6">
-                artisanlichfield.<span class="text-indigo-600">com</span>
+            <h1 class="text-4xl md:text-6xl font-bold tracking-tight text-primary-dark mb-6">
+                artisanlichfield.<span class="text-accent">com</span>
             </h1>
-            <h2 class="text-2xl md:text-3xl font-medium text-slate-700 mb-8">
+            <h2 class="text-2xl md:text-3xl font-medium text-primary-dark mb-8">
                 The Curated Directory for Local Artisan Food & Drink Producers in Lichfield
             </h2>
-            <p class="max-w-2xl mx-auto text-lg text-slate-600 mb-10">
+            <p class="max-w-2xl mx-auto text-lg text-primary-dark mb-10">
                 We're building a definitive online directory for Lichfield's finest local producers. Whether you're looking for a farm shop near you, a local brewery, or a family-run bakery, we'll make it easy to find and support the very best of our community.
             </p>
             
             <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl max-w-xl mx-auto">
-                <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mb-4">
+                <h3 class="text-xl sm:text-2xl font-bold text-primary-dark mb-4">
                     Get Notified When We Launch!
                 </h3>
                 
@@ -43,7 +64,7 @@
                             id="userType"
                             name="userType"
                             required
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 bg-slate-100 text-slate-700"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 input-field text-primary-dark"
                         >
                             <option value="" disabled selected>I am a...</option>
                             <option value="Curious Foodie">Curious Foodie</option>
@@ -57,7 +78,7 @@
                             name="firstName"
                             required
                             placeholder="First Name"
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 bg-slate-100"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 input-field"
                         />
                     </div>
                     <div>
@@ -67,7 +88,7 @@
                             name="lastName"
                             required
                             placeholder="Last Name"
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 bg-slate-100"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 input-field"
                         />
                     </div>
                     <div>
@@ -77,13 +98,13 @@
                             name="email"
                             required
                             placeholder="Email Address"
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 bg-slate-100"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 input-field"
                         />
                     </div>
                     <button
                         type="submit"
                         id="submit-btn"
-                        class="w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300"
+                        class="w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-base font-medium rounded-md btn-primary"
                     >
                         Notify Me
                     </button>
@@ -91,7 +112,7 @@
                 </form>
             </div>
 
-            <div class="mt-16 text-sm text-slate-500">
+            <div class="mt-16 text-sm text-primary-dark">
                 <p>Are you a local producer? We'd love to feature you! Stay tuned for our submission form.</p>
             </div>
         </div>
@@ -184,3 +205,4 @@
     </script>
 </body>
 </html>
+
