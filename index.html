@@ -19,6 +19,8 @@
         .user-type-button.selected {
             transform: scale(1.05);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background-color: #4f46e5;
+            color: white;
         }
         .bg-gradient-blue {
             background: linear-gradient(to bottom, #f1f5f9, #cbd5e1);
@@ -116,10 +118,8 @@
 
             const handleUserTypeSelection = (type, selectedBtn, otherBtn) => {
                 userType = type;
-                selectedBtn.classList.add('bg-indigo-600', 'text-white', 'selected');
-                selectedBtn.classList.remove('bg-slate-100', 'text-slate-700');
-                otherBtn.classList.remove('bg-indigo-600', 'text-white', 'selected');
-                otherBtn.classList.add('bg-slate-100', 'text-slate-700');
+                selectedBtn.classList.add('selected');
+                otherBtn.classList.remove('selected');
             };
 
             producerBtn.addEventListener('click', () => {
@@ -150,10 +150,8 @@
                     form.reset();
                     successMessage.classList.remove('hidden');
 
-                    producerBtn.classList.remove('bg-indigo-600', 'text-white', 'selected');
-                    producerBtn.classList.add('bg-slate-100', 'text-slate-700');
-                    foodieBtn.classList.remove('bg-indigo-600', 'text-white', 'selected');
-                    foodieBtn.classList.add('bg-slate-100', 'text-slate-700');
+                    producerBtn.classList.remove('selected');
+                    foodieBtn.classList.remove('selected');
                     userType = '';
                     
                 } catch (error) {
