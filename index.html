@@ -38,6 +38,19 @@
                 
                 <form id="notify-form" class="space-y-4">
                     <div>
+                        <label for="userType" class="sr-only">I am a:</label>
+                        <select
+                            id="userType"
+                            name="userType"
+                            required
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 bg-slate-100 text-slate-700"
+                        >
+                            <option value="" disabled selected>I am a...</option>
+                            <option value="Curious Foodie">Curious Foodie</option>
+                            <option value="Local Producer">Local Producer</option>
+                        </select>
+                    </div>
+                    <div>
                         <input
                             type="text"
                             id="firstName"
@@ -69,6 +82,7 @@
                     </div>
                     <button
                         type="submit"
+                        id="submit-btn"
                         class="w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300"
                     >
                         Notify Me
@@ -93,13 +107,17 @@
             const firstNameInput = document.getElementById('firstName');
             const lastNameInput = document.getElementById('lastName');
             const emailInput = document.getElementById('email');
+            const userTypeInput = document.getElementById('userType');
             const successMessage = document.getElementById('success-message');
+            const submitBtn = document.getElementById('submit-btn');
 
             const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
             if (Object.keys(firebaseConfig).length === 0) {
                 console.error("Firebase config is missing. Data will not be saved.");
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Error: Firebase config missing";
                 return;
             }
 
@@ -111,13 +129,27 @@
                 await signInAnonymously(auth);
             } catch (error) {
                 console.error("Anonymous sign-in failed:", error);
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Error: Authentication failed";
+                return;
             }
 
             form.addEventListener('submit', async function(event) {
                 event.preventDefault();
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Submitting...";
+
                 const firstName = firstNameInput.value;
                 const lastName = lastNameInput.value;
                 const email = emailInput.value;
+                const userType = userTypeInput.value;
+
+                if (!userType) {
+                    alert('Please select if you are a producer or a foodie.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Notify Me";
+                    return;
+                }
 
                 try {
                     const notifyCollection = collection(db, `/artifacts/${appId}/public/data/pre-launch-signups`);
@@ -125,6 +157,7 @@
                         firstName: firstName,
                         lastName: lastName,
                         email: email,
+                        userType: userType,
                         timestamp: serverTimestamp()
                     });
 
@@ -133,7 +166,10 @@
                     
                 } catch (error) {
                     console.error("Error adding document:", error);
-                    alert("Failed to submit. Please try again.");
+                    alert("Failed to submit: " + error.message);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Notify Me";
                 }
             });
         });
