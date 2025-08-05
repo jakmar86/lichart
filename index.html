@@ -102,6 +102,17 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        const firebaseConfig = {
+          apiKey: "AIzaSyAeMIl8q4WKI17pMzM5zMmxkg9Cn7j2JPg",
+          authDomain: "artisanlichfield.firebaseapp.com",
+          projectId: "artisanlichfield",
+          storageBucket: "artisanlichfield.firebasestorage.app",
+          messagingSenderId: "476958782386",
+          appId: "1:476958782386:web:41407ea6259b2a2377aaab",
+          measurementId: "G-H4LMS97GWD"
+        };
+        const appId = firebaseConfig.appId;
+
         document.addEventListener('DOMContentLoaded', async () => {
             const form = document.getElementById('notify-form');
             const firstNameInput = document.getElementById('firstName');
@@ -111,11 +122,8 @@
             const successMessage = document.getElementById('success-message');
             const submitBtn = document.getElementById('submit-btn');
 
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-            if (Object.keys(firebaseConfig).length === 0) {
-                console.error("Firebase config is missing. Data will not be saved.");
+            if (!firebaseConfig || !firebaseConfig.projectId) {
+                console.error("Firebase config is missing or invalid. Data will not be saved.");
                 submitBtn.disabled = true;
                 submitBtn.textContent = "Error: Firebase config missing";
                 return;
