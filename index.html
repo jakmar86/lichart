@@ -83,13 +83,37 @@
         </div>
     </main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        document.addEventListener('DOMContentLoaded', async () => {
             const form = document.getElementById('notify-form');
             const emailInput = document.getElementById('email');
             const producerBtn = document.getElementById('producer-btn');
             const foodieBtn = document.getElementById('foodie-btn');
+            const successMessage = document.getElementById('success-message');
             let userType = '';
+
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+            if (Object.keys(firebaseConfig).length === 0) {
+                console.error("Firebase config is missing. Data will not be saved.");
+                return;
+            }
+
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+
+            try {
+                // Sign in anonymously to get a user ID for Firestore security rules
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Anonymous sign-in failed:", error);
+            }
 
             const handleUserTypeSelection = (type, selectedBtn, otherBtn) => {
                 userType = type;
@@ -107,7 +131,7 @@
                 handleUserTypeSelection('Curious Foodie', foodieBtn, producerBtn);
             });
 
-            form.addEventListener('submit', function(event) {
+            form.addEventListener('submit', async function(event) {
                 event.preventDefault();
                 const email = emailInput.value;
 
@@ -116,18 +140,28 @@
                     return;
                 }
 
-                console.log("Email submitted:", email);
-                console.log("User Type:", userType);
-                
-                form.reset();
-                document.getElementById('success-message').classList.remove('hidden');
-                
-                // Reset buttons visually
-                producerBtn.classList.remove('bg-indigo-600', 'text-white', 'selected');
-                producerBtn.classList.add('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
-                foodieBtn.classList.remove('bg-indigo-600', 'text-white', 'selected');
-                foodieBtn.classList.add('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
-                userType = '';
+                try {
+                    const notifyCollection = collection(db, `/artifacts/${appId}/public/data/pre-launch-signups`);
+                    await addDoc(notifyCollection, {
+                        email: email,
+                        userType: userType,
+                        timestamp: serverTimestamp()
+                    });
+
+                    form.reset();
+                    successMessage.classList.remove('hidden');
+
+                    // Reset buttons visually
+                    producerBtn.classList.remove('bg-indigo-600', 'text-white', 'selected');
+                    producerBtn.classList.add('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
+                    foodieBtn.classList.remove('bg-indigo-600', 'text-white', 'selected');
+                    foodieBtn.classList.add('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
+                    userType = '';
+                    
+                } catch (error) {
+                    console.error("Error adding document:", error);
+                    alert("Failed to submit. Please try again.");
+                }
             });
         });
     </script>
