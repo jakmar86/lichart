@@ -12,16 +12,6 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .user-type-button {
-            transition: all 0.2s ease-in-out;
-            transform: scale(1);
-        }
-        .user-type-button.selected {
-            transform: scale(1.05);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            background-color: #4f46e5;
-            color: white;
-        }
         .bg-gradient-blue {
             background: linear-gradient(to bottom, #f1f5f9, #cbd5e1);
         }
@@ -46,26 +36,34 @@
                     Get Notified When We Launch!
                 </h3>
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">I am a:</label>
-                    <div class="flex space-x-4 justify-center">
-                        <button type="button" id="producer-btn" class="user-type-button flex-1 py-3 px-4 border border-slate-300 rounded-md text-sm font-medium text-slate-700 bg-slate-100 transition-colors">
-                            Local Producer
-                        </button>
-                        <button type="button" id="foodie-btn" class="user-type-button flex-1 py-3 px-4 border border-slate-300 rounded-md text-sm font-medium text-slate-700 bg-slate-100 transition-colors">
-                            Curious Foodie
-                        </button>
-                    </div>
-                </div>
-                
                 <form id="notify-form" class="space-y-4">
+                    <div>
+                        <input
+                            type="text"
+                            id="firstName"
+                            name="firstName"
+                            required
+                            placeholder="First Name"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 bg-slate-100"
+                        />
+                    </div>
+                    <div>
+                        <input
+                            type="text"
+                            id="lastName"
+                            name="lastName"
+                            required
+                            placeholder="Last Name"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 bg-slate-100"
+                        />
+                    </div>
                     <div>
                         <input
                             type="email"
                             id="email"
                             name="email"
                             required
-                            placeholder="Enter your email address"
+                            placeholder="Email Address"
                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 bg-slate-100"
                         />
                     </div>
@@ -92,11 +90,10 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             const form = document.getElementById('notify-form');
+            const firstNameInput = document.getElementById('firstName');
+            const lastNameInput = document.getElementById('lastName');
             const emailInput = document.getElementById('email');
-            const producerBtn = document.getElementById('producer-btn');
-            const foodieBtn = document.getElementById('foodie-btn');
             const successMessage = document.getElementById('success-message');
-            let userType = '';
 
             const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -116,43 +113,23 @@
                 console.error("Anonymous sign-in failed:", error);
             }
 
-            const handleUserTypeSelection = (type, selectedBtn, otherBtn) => {
-                userType = type;
-                selectedBtn.classList.add('selected');
-                otherBtn.classList.remove('selected');
-            };
-
-            producerBtn.addEventListener('click', () => {
-                handleUserTypeSelection('Local Producer', producerBtn, foodieBtn);
-            });
-
-            foodieBtn.addEventListener('click', () => {
-                handleUserTypeSelection('Curious Foodie', foodieBtn, producerBtn);
-            });
-
             form.addEventListener('submit', async function(event) {
                 event.preventDefault();
+                const firstName = firstNameInput.value;
+                const lastName = lastNameInput.value;
                 const email = emailInput.value;
-
-                if (!userType) {
-                    alert('Please select if you are a producer or a foodie.');
-                    return;
-                }
 
                 try {
                     const notifyCollection = collection(db, `/artifacts/${appId}/public/data/pre-launch-signups`);
                     await addDoc(notifyCollection, {
+                        firstName: firstName,
+                        lastName: lastName,
                         email: email,
-                        userType: userType,
                         timestamp: serverTimestamp()
                     });
 
                     form.reset();
                     successMessage.classList.remove('hidden');
-
-                    producerBtn.classList.remove('selected');
-                    foodieBtn.classList.remove('selected');
-                    userType = '';
                     
                 } catch (error) {
                     console.error("Error adding document:", error);
